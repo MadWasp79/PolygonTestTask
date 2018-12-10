@@ -1,0 +1,18 @@
+<resources>
+  <string name="app_name">Polygon Test Task</string>
+  <string name="polygon_test_task">Polygon Test Task</string>
+  <string name="proceed">Proceed</string>
+
+  <!-- Errors -->
+  <string name="exception_no_internet_connection">No internet connection</string>
+  <string name="error">Error!</string>
+  <string name="error_handler_server_error">
+        Server error. Repeat the request after 5 seconds
+    </string>
+  <string name="error_handler_unknown_error">
+        Something went wrong. Please try again later
+    </string>
+  <string name="message_text">Now you can create a Polygon by selecting points on map. Press Round Button to finish</string>
+  <string name="error_no_permissions">Sorry, no permission for you</string>
+
+</resources>

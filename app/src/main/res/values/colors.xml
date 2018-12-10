@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="colorPrimary">#008577</color>
+  <color name="colorPrimaryDark">#00574B</color>
+  <color name="colorAccent">#D81B60</color>
+  <color name="backgroundTransparent50">#7f000000</color>
+  <color name="backgroundWhite">#ffffffff</color>
+
+
+  <!--FAB Colors-->
+  <color name="colorEditOff">#ff882c</color>
+  <color name="colorEditOn">#FF008577</color>
+
+</resources>
