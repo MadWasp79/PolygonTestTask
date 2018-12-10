@@ -1,10 +1,8 @@
 package com.mwhive.polygontesttask.presentation.mainScreen.polygonDialog
 
 import android.arch.lifecycle.MutableLiveData
-import android.os.Environment
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.SphericalUtil
-import com.mwhive.polygontesttask.App
 import com.mwhive.polygontesttask.base.BaseViewModel
 import com.mwhive.polygontesttask.domain.Repository
 import com.mwhive.polygontesttask.domain.models.polygon.PolygonModel
@@ -13,7 +11,6 @@ import com.mwhive.polygontesttask.utilsandextensions.extensions.cropToString
 import com.mwhive.polygontesttask.utilsandextensions.extensions.toFormattedDate
 import timber.log.Timber
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
 
 

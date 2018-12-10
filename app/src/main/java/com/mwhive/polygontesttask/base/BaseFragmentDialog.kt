@@ -6,9 +6,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.annotation.LayoutRes
 import android.support.v4.app.DialogFragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import com.mwhive.polygontesttask.utilsandextensions.extensions.inflate
 
 
@@ -47,10 +45,14 @@ abstract class BaseFragmentDialog<VM : BaseViewModel> : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
+//        val window = dialog.window
+//        val lp = WindowManager.LayoutParams()
+//        lp.gravity = Gravity.BOTTOM
+//        lp.x = 100
+//        window?.attributes = lp
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
     }
-
-
 
 
     protected fun <T, LD : LiveData<T>> observe(liveData: LD, onChanged: (T) -> Unit) {

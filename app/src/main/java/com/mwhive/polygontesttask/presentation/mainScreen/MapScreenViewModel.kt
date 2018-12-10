@@ -13,7 +13,6 @@ import com.mvhive.polygontesttask.tools.Constants.COLOR_PURPLE_ARGB
 import com.mvhive.polygontesttask.tools.Constants.DASH
 import com.mvhive.polygontesttask.tools.Constants.GAP
 import com.mwhive.polygontesttask.base.BaseViewModel
-import io.reactivex.Observable
 
 
 /**

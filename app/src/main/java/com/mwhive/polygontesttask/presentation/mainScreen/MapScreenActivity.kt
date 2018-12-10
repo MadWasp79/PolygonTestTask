@@ -18,7 +18,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.mvc.imagepicker.ImagePicker
 import com.mwhive.devmindtestproject.utilsandextensions.visibleOrGone
 import com.mwhive.polygontesttask.R
 import com.mwhive.polygontesttask.base.BaseActivity
@@ -26,10 +25,8 @@ import com.mwhive.polygontesttask.presentation.mainScreen.polygonDialog.DialogLi
 import com.mwhive.polygontesttask.presentation.mainScreen.polygonDialog.PolygonDialogFragment
 import com.mwhive.polygontesttask.utilsandextensions.extensions.toast
 import kotlinx.android.synthetic.main.map_screen.*
-import pl.aprilapps.easyphotopicker.DefaultCallback
 import pl.aprilapps.easyphotopicker.EasyImage
 import timber.log.Timber
-import java.io.File
 
 class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback {
 
@@ -40,8 +37,9 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
 
         fun newIntent(context: Context): Intent {
             val intent = Intent(context, MapScreenActivity::class.java)
-            //here we could put extra if needed. But not in this case
-            //intent.putExtra(EXTRA_ID, data)
+
+            /**here we could put extra if needed. But not in this case*/
+            /**intent.putExtra(EXTRA_ID, data)*/
 
             return intent
         }
@@ -49,7 +47,8 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
 
     var map: GoogleMap? = null
 
-    val polygonList = mutableListOf<Polygon>()
+    private val polygonList = mutableListOf<Polygon>()
+    private val pointsList = mutableListOf<Marker>()
 
     var locationMarkerOptions: MarkerOptions? = null
 
@@ -70,7 +69,6 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -83,8 +81,6 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
         EasyImage.configuration(this)
             .setImagesFolderName("PolygonImages")
             .saveInAppExternalFilesDir()
-
-
         setupListeners()
     }
 
@@ -93,15 +89,12 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
         drawPolygonFAB.setOnClickListener {
             when (viewModel.isDrawingMode.value!!) {
                 true -> {
-                    viewModel.isDrawingMode.postValue(false)
-                }
+                    viewModel.isDrawingMode.postValue(false) }
                 false -> {
                     viewModel.isDrawingMode.postValue(true)
                     createNewPolygon()
-
                 }
             }
-            Timber.i("drawPolygon state ${viewModel.isDrawingMode}")
         }
 
         deleteLastPointButton.setOnClickListener {
@@ -122,17 +115,18 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
                 deleteLastPointButton.visibleOrGone(state)
                 when (state) {
                     true -> {
+                        messageTV.text = resources.getString(R.string.message_text2)
                         drawPolygonFAB.backgroundTintList =
                                 ColorStateList.valueOf(resources.getColor(R.color.colorEditOn))
                         drawPolygonFAB.setImageResource(R.drawable.ic_done_black_24dp)
                     }
                     false -> {
+                        messageTV.text = resources.getString(R.string.message_text)
                         drawPolygonFAB.backgroundTintList =
                                 ColorStateList.valueOf(resources.getColor(R.color.colorEditOff))
                         drawPolygonFAB.setImageResource(R.drawable.ic_add_black_24dp)
                     }
                 }
-
             }
         }
 
@@ -151,29 +145,31 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
         }
 
         observe(viewModel.pointsLive) {
+            addMarker(it)
             it?.let { points ->
                 when {
-                    points.isEmpty() -> {
-                        //deletePolygon(0)
-                    }
-                    points.size == 1 -> {
-                    }
-                    points.size == 2 -> {
-                    }
+                    points.size < 3 -> {}
                     points.size == 3 -> {
                         addPolygonToMap(viewModel.currentPolygonOptions!!, "polygon_")
                     }
-                    points.size > 3 -> {
-                        updatePolygonOnMap(points)
-                    }
+                    points.size > 3 -> { updatePolygonOnMap(points) }
                 }
-
             }
         }
-
         observe(viewModel.deletePolygonLiveData) {
             if (it!!) deletePolygon(0)
         }
+    }
+
+    private fun addMarker(points:List<LatLng>){
+        val options = MarkerOptions()
+
+        options.position(points[points.size-1])
+            .icon(BitmapDescriptorFactory.fromResource(R.drawable.adjust_marker))
+            .alpha(0.7f)
+            .anchor(0.5f, 0.5f)
+        pointsList.add(map?.addMarker(options)!!)
+
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
@@ -247,9 +243,9 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
     }
 
     private fun deletePolygon(id: Int) {
-        polygonList.clear()
-        map?.clear()
-        map?.addMarker(locationMarkerOptions)
+        polygonList[0].remove()
+        pointsList.forEach { it.remove() }
+
     }
 
     override fun onRequestPermissionsResult(
@@ -276,7 +272,6 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
 
     @SuppressLint("MissingPermission")
     private fun getCurrentLocation() {
-
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager.requestLocationUpdates(
             LocationManager.NETWORK_PROVIDER,

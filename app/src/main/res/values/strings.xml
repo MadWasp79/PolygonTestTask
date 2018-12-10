@@ -12,7 +12,9 @@
   <string name="error_handler_unknown_error">
         Something went wrong. Please try again later
     </string>
-  <string name="message_text">Now you can create a Polygon by selecting points on map. Press Round Button to finish</string>
+  <string name="message_text">Press Orange Button and select points on map (you need at least 3 to create a Polygon)</string>
+  <string name="message_text2">Press Green Button to stop editing. Or press Red Button to start from scratch </string>
   <string name="error_no_permissions">Sorry, no permission for you</string>
+  <string name="dont_panic_message">Please, have some patience, little human, while our satellites looking for you precise location. Don\'t run! Don\'t panic! It\'s all pointless, we\'ll find you anyway!..</string>
 
 </resources>
