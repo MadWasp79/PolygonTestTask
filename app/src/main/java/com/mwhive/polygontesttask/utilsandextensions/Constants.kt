@@ -15,7 +15,9 @@ object Constants {
     const val COLOR_PURPLE_ARGB = -0x7e387c
     const val COLOR_ORANGE_ARGB = -0xa80e9
     const val COLOR_BLUE_ARGB = -0x657db
-    const val COLOR_BLUE_TRANSP_ARGB = -0x770657db
+    const val COLOR_ORANGE_TRANSP_ARGB = 0x7fffed49
+    const val COLOR_GREEN_TRANSP_ARGB = 0x7e4bbf7a
+    const val COLOR_BLUE_TRANSP_ARGB = -0x657db77
 
     const val POLYLINE_STROKE_WIDTH_PX = 12
     const val POLYGON_STROKE_WIDTH_PX = 8

@@ -1,6 +1,7 @@
 package com.mwhive.polygontesttask.domain
 
 import com.mwhive.polygontesttask.data.local.LocalDataStore
+import com.mwhive.polygontesttask.data.local.RealmLocalDataStore
 import com.mwhive.polygontesttask.data.remote.PolygonRemoteDataStore
 import com.mwhive.polygontesttask.data.remote.RemoteDataStore
 import com.mwhive.polygontesttask.domain.models.polygon.PolygonModel
@@ -17,35 +18,19 @@ import io.reactivex.Single
 object Repository: RemoteDataStore, LocalDataStore {
 
 
-    //in real app we shoud change this to instance of Realm database and store all polygon data there
-    private val listOfPolygons = mutableListOf<PolygonModel>()
+    private val localDataStore:LocalDataStore = RealmLocalDataStore
 
-    //in real app change to Realm database methods
-    override fun savePolygon(polygon: PolygonModel) {
-        listOfPolygons.add(polygon)
-    }
 
-    fun updatePolygon(polygon: PolygonModel) {
-        if(listOfPolygons.isNotEmpty() && listOfPolygons.any { it.tag == polygon.tag }) {
-            listOfPolygons.remove(listOfPolygons.filter { it.tag == polygon.tag }[0])
-            listOfPolygons.add(polygon)
-        } else {
-            savePolygon(polygon)
-        }
-    }
 
-    fun getPolygonByTag(tag:String):PolygonModel {
-        return if(listOfPolygons.isNotEmpty() && listOfPolygons.any { it.tag == tag }) {
-            listOfPolygons.filter { it.tag == tag }[0]
-        } else PolygonModel()
-    }
+    override fun savePolygon(polygon: PolygonModel) = localDataStore.savePolygon(polygon)
 
-    fun deletePolygons() = listOfPolygons.clear()
+    override fun updatePolygon(polygon: PolygonModel) = localDataStore.updatePolygon(polygon)
 
-    //in real app change to Realm database methods
-    override fun getPolygons(): List<PolygonModel> {
-        return listOfPolygons
-    }
+    override fun getPolygonByTag(tag:String):PolygonModel? = localDataStore.getPolygonByTag(tag)
+
+    override fun getPolygons(): List<PolygonModel> = localDataStore.getPolygons()
+
+    override fun deletePolygonByTag(tag: String) = localDataStore.deletePolygonByTag(tag)
 
 
     //didn't used in current project.

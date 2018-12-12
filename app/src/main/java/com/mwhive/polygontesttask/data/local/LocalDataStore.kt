@@ -10,5 +10,8 @@ import com.mwhive.polygontesttask.domain.models.polygon.PolygonModel
 interface LocalDataStore {
 
     fun savePolygon(polygon: PolygonModel)
+    fun updatePolygon(polygon: PolygonModel)
     fun getPolygons():List<PolygonModel>
+    fun getPolygonByTag(tag:String):PolygonModel?
+    fun deletePolygonByTag(tag:String)
 }

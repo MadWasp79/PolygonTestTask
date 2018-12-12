@@ -29,7 +29,6 @@ class PolygonDialogFragment : BaseFragmentDialog<PolygonDialogViewModel>() {
     companion object {
         private const val TAG = "PolygonDialogFragment"
 
-
         fun newInstance(tag: String, listOfPoints: List<LatLng>, listener: DialogListener) =
             PolygonDialogFragment().apply {
                 this.listener = listener
@@ -101,6 +100,9 @@ class PolygonDialogFragment : BaseFragmentDialog<PolygonDialogViewModel>() {
                 )
                 .subscribe { granted ->
                     if (granted) {
+                        EasyImage.configuration(activity!!)
+                            .setImagesFolderName("PolygonImages")
+                            .saveInAppExternalFilesDir()
                         EasyImage.openCamera(this, 0)
                     } else {
                         toast(getString(R.string.error_no_permissions))

@@ -7,12 +7,15 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
 import com.google.maps.android.PolyUtil
-import com.mvhive.polygontesttask.tools.Constants.COLOR_BLUE_TRANSP_ARGB
+import com.mvhive.polygontesttask.tools.Constants.COLOR_ORANGE_TRANSP_ARGB
+import com.mvhive.polygontesttask.tools.Constants.COLOR_GREEN_ARGB
 import com.mvhive.polygontesttask.tools.Constants.COLOR_ORANGE_ARGB
 import com.mvhive.polygontesttask.tools.Constants.COLOR_PURPLE_ARGB
+import com.mvhive.polygontesttask.tools.Constants.COLOR_GREEN_TRANSP_ARGB
 import com.mvhive.polygontesttask.tools.Constants.DASH
 import com.mvhive.polygontesttask.tools.Constants.GAP
 import com.mwhive.polygontesttask.base.BaseViewModel
+import timber.log.Timber
 
 
 /**
@@ -22,21 +25,25 @@ import com.mwhive.polygontesttask.base.BaseViewModel
 class MapScreenViewModel : BaseViewModel(), LifecycleObserver {
 
     val myCurrentLocation = MutableLiveData<Location>()
-    val polygonLive = MutableLiveData<PolygonOptions>()
     val pointsLive = MutableLiveData<List<LatLng>>()
     val deletePolygonLiveData = MutableLiveData<Boolean>()
+    val mapOfPolygonOptionsWithTags = MutableLiveData<Map<String, PolygonOptions>>()
 
+
+    var newPolygonTag:String = ""
+    var selectedPolygonTag:String = ""
     var isDrawingMode = MutableLiveData<Boolean>()
     var isStarted = true
     var currentPolygonOptions: PolygonOptions? = null
     val currentPoints = mutableListOf<LatLng>()
-    var currentPolygon: Polygon? = null
 
 
     init {
         isDrawingMode.postValue(false)
         showLoading()
     }
+
+
 
     fun isStarted(state: Boolean) {
         isStarted = state
@@ -50,7 +57,7 @@ class MapScreenViewModel : BaseViewModel(), LifecycleObserver {
             .strokeColor(COLOR_ORANGE_ARGB)
             .strokePattern(listOf(GAP, DASH))
             .strokeColor(COLOR_PURPLE_ARGB)
-            .fillColor(COLOR_BLUE_TRANSP_ARGB)
+            .fillColor(COLOR_ORANGE_TRANSP_ARGB)
 
     }
 
@@ -62,24 +69,48 @@ class MapScreenViewModel : BaseViewModel(), LifecycleObserver {
         }
     }
 
-    fun deletePolygon(id: Int) {
+    fun deletePolygon(tag:String) {
+        repository.deletePolygonByTag(tag)
         if (isDrawingMode.value!!) {
             currentPoints.clear()
-            deletePolygonLiveData.postValue(true)
+//            deletePolygonLiveData.postValue(true)
             isDrawingMode.postValue(false)
-            repository.deletePolygons()
+
 
         }
     }
 
+    fun getPolygonsFromRealm() {
+        val mapOfOptions = mutableMapOf<String, PolygonOptions>()
+        repository.getPolygons().forEach {
+            Timber.d("Tag from db: $it.tag")
+            mapOfOptions[it.tag] = PolygonOptions()
+                .clickable(true)
+                .strokeColor(COLOR_GREEN_ARGB)
+                .strokePattern(listOf(GAP, DASH))
+                .strokeColor(COLOR_PURPLE_ARGB)
+                .fillColor(COLOR_GREEN_TRANSP_ARGB)
+                .addAll(it.polygonPoints)
+        }
 
-    fun isInRange(): Boolean? {
+        mapOfPolygonOptionsWithTags.postValue(mapOfOptions)
+
+
+    }
+
+    fun isInRange(polygon: Polygon?): Boolean? {
+        val points = polygon!!.points
         return myCurrentLocation.value?.let {
             PolyUtil.containsLocation(
                 LatLng(myCurrentLocation.value!!.latitude, myCurrentLocation.value!!.longitude),
-                currentPoints, false
+                points, false
             )
         }
+    }
+
+    fun createNewPolygon() {
+        currentPoints.clear()
+        pointsLive.postValue(currentPoints)
     }
 
 }

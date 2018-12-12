@@ -1,20 +1,23 @@
 <resources>
-  <string name="app_name">Polygon Test Task</string>
-  <string name="polygon_test_task">Polygon Test Task</string>
+  <string name="app_name" translatable="false">Polygon Test Task</string>
+  <string name="polygon_test_task" translatable="false">Polygon Test Task</string>
   <string name="proceed">Proceed</string>
 
   <!-- Errors -->
-  <string name="exception_no_internet_connection">No internet connection</string>
-  <string name="error">Error!</string>
-  <string name="error_handler_server_error">
+  <string name="exception_no_internet_connection" translatable="false">No internet connection</string>
+  <string name="error" translatable="false">Error!</string>
+  <string name="error_handler_server_error" translatable="false">
         Server error. Repeat the request after 5 seconds
     </string>
-  <string name="error_handler_unknown_error">
+  <string name="error_handler_unknown_error" translatable="false">
         Something went wrong. Please try again later
     </string>
-  <string name="message_text">Press Orange Button and select points on map (you need at least 3 to create a Polygon)</string>
-  <string name="message_text2">Press Green Button to stop editing. Or press Red Button to start from scratch </string>
-  <string name="error_no_permissions">Sorry, no permission for you</string>
-  <string name="dont_panic_message">Please, have some patience, little human, while our satellites looking for you precise location. Don\'t run! Don\'t panic! It\'s all pointless, we\'ll find you anyway!..</string>
+  <string name="message_text">Press Orange Button and place Points on map. You need at least three Points to create a Polygon</string>
+  <string name="message_text2">Press Green Button to stop editing</string>
+  <string name="error_no_permissions" translatable="false">Sorry, no permission for you</string>
+  <string name="dont_panic_message" translatable="false">Please, have some patience, Human! Our satellites are looking for you right now. Keep calm. Don\'t run. Don\'t panic. It\'s pointless, we\'ll find you anyway…</string>
+  <string name="save_data">Save data</string>
+  <string name="area">Area:</string>
+  <string name="enter_polygon_info">Enter Polygon Info</string>
 
 </resources>

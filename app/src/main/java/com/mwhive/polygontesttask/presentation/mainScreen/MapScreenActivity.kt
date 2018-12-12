@@ -12,6 +12,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.res.ResourcesCompat
 import android.support.v7.app.AlertDialog
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -24,9 +25,11 @@ import com.mwhive.polygontesttask.base.BaseActivity
 import com.mwhive.polygontesttask.presentation.mainScreen.polygonDialog.DialogListener
 import com.mwhive.polygontesttask.presentation.mainScreen.polygonDialog.PolygonDialogFragment
 import com.mwhive.polygontesttask.utilsandextensions.extensions.toast
+import com.mwhive.polygontesttask.utilsandextensions.extensions.toastD
 import kotlinx.android.synthetic.main.map_screen.*
 import pl.aprilapps.easyphotopicker.EasyImage
 import timber.log.Timber
+import java.util.*
 
 class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback {
 
@@ -89,7 +92,8 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
         drawPolygonFAB.setOnClickListener {
             when (viewModel.isDrawingMode.value!!) {
                 true -> {
-                    viewModel.isDrawingMode.postValue(false) }
+                    viewModel.isDrawingMode.postValue(false)
+                }
                 false -> {
                     viewModel.isDrawingMode.postValue(true)
                     createNewPolygon()
@@ -97,13 +101,18 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
             }
         }
 
-        deleteLastPointButton.setOnClickListener {
-            viewModel.deletePolygon(0)
+        deleteSelectedPolygonBtn.setOnClickListener {
+            if (viewModel.selectedPolygonTag.isNotEmpty())
+                deletePolygon(viewModel.selectedPolygonTag)
+            else toast("Please select Polygon to Remove")
         }
+
+
     }
 
-    fun createNewPolygon() {
+    private fun createNewPolygon() {
         viewModel.createPolygonOptions()
+        viewModel.createNewPolygon()
 
     }
 
@@ -112,19 +121,22 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
 
         observe(viewModel.isDrawingMode) { state ->
             state?.let {
-                deleteLastPointButton.visibleOrGone(state)
+
                 when (state) {
                     true -> {
                         messageTV.text = resources.getString(R.string.message_text2)
                         drawPolygonFAB.backgroundTintList =
                                 ColorStateList.valueOf(resources.getColor(R.color.colorEditOn))
                         drawPolygonFAB.setImageResource(R.drawable.ic_done_black_24dp)
+                        map?.setOnPolygonClickListener {  }
                     }
                     false -> {
+                        pointsList.forEach { point -> point.remove() }
                         messageTV.text = resources.getString(R.string.message_text)
                         drawPolygonFAB.backgroundTintList =
                                 ColorStateList.valueOf(resources.getColor(R.color.colorEditOff))
                         drawPolygonFAB.setImageResource(R.drawable.ic_add_black_24dp)
+                        map?.setOnPolygonClickListener { onPolygonSelect(it) }
                     }
                 }
             }
@@ -145,26 +157,38 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
         }
 
         observe(viewModel.pointsLive) {
-            addMarker(it)
+            if (it.isNotEmpty()) addMarker(it)
+            Timber.i("Points size: ${it.size}")
             it?.let { points ->
                 when {
-                    points.size < 3 -> {}
-                    points.size == 3 -> {
-                        addPolygonToMap(viewModel.currentPolygonOptions!!, "polygon_")
+                    points.size < 3 -> {
                     }
-                    points.size > 3 -> { updatePolygonOnMap(points) }
+                    points.size == 3 -> {
+                        val tag = "Polygon_${UUID.randomUUID().toString().subSequence(0, 8)}"
+                        Timber.d(tag)
+                        addPolygonToMap(viewModel.currentPolygonOptions!!, tag)
+                        viewModel.newPolygonTag = tag
+                    }
+                    points.size > 3 -> {
+                        updatePolygonOnMap(points, viewModel.newPolygonTag)
+                    }
                 }
             }
         }
+
         observe(viewModel.deletePolygonLiveData) {
-            if (it!!) deletePolygon(0)
+//            if (it!!) deletePolygon(0)
+        }
+
+        observe(viewModel.mapOfPolygonOptionsWithTags) {
+            addPolygonsFromRealmToMap(it)
         }
     }
 
-    private fun addMarker(points:List<LatLng>){
+    private fun addMarker(points: List<LatLng>) {
         val options = MarkerOptions()
 
-        options.position(points[points.size-1])
+        options.position(points[points.size - 1])
             .icon(BitmapDescriptorFactory.fromResource(R.drawable.adjust_marker))
             .alpha(0.7f)
             .anchor(0.5f, 0.5f)
@@ -207,31 +231,60 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
         }
 
         map?.setOnPolygonClickListener {
-            viewModel.currentPolygon = it
-            Timber.i("selected polygon: \n $it.")
-            openDataDialog(it)
+            onPolygonSelect(it)
         }
 
+        viewModel.getPolygonsFromRealm()
     }
 
     private fun addPolygonToMap(polygonOptions: PolygonOptions?, tag: String) {
         map?.let {
+
             polygonList.add(map!!.addPolygon(polygonOptions))
-            polygonList[polygonList.size - 1].tag = "${tag}${polygonList.size - 1}"
+            polygonList[polygonList.size - 1].tag = tag
+
         }
     }
 
-    private fun updatePolygonOnMap(points: List<LatLng>) {
-        polygonList[0].points = points
+    fun onPolygonSelect(it:Polygon) {
+        changePolygonColorOnDeselect()
+        viewModel.selectedPolygonTag = it.tag.toString()
+//        toastD("Selected polygon: ${it.tag.toString()}")
+//        viewModel.currentPolygon = it
+        changeSelectedPolygonColor(it.tag.toString())
+        openDataDialog(it)
+    }
+
+
+
+    private fun addPolygonsFromRealmToMap(realmPolygonOptions: Map<String, PolygonOptions>) {
+        map?.let {
+            for((k,v) in realmPolygonOptions) { addPolygonToMap(v,k) }
+        }
+    }
+
+    private fun updatePolygonOnMap(points: List<LatLng>, tag: String) {
+        polygonList.forEach { if (it.tag == tag) it.points = points }
+    }
+
+    private fun changeSelectedPolygonColor(tag:String) {
+        polygonList.forEach { if (it.tag == tag) it.fillColor = ResourcesCompat.getColor(resources, R.color.blueTransp, null)}
+    }
+
+    private fun changePolygonColorOnDeselect() {
+        if(viewModel.selectedPolygonTag.isNotEmpty()) {
+            polygonList.forEach { if (it.tag == viewModel.selectedPolygonTag)
+                it.fillColor = ResourcesCompat.getColor(resources, R.color.greenTransp, null)}
+        }
     }
 
     private fun openDataDialog(polygon: Polygon?) {
 
         val polygonTag = polygon?.tag.toString()
 
-        if (viewModel.isInRange()!!) {
+        if (viewModel.isDrawingMode.value == false && viewModel.isInRange(polygon)!!) {
 
-            PolygonDialogFragment.newInstance(polygonTag, viewModel.currentPoints, dialogListener)
+            PolygonDialogFragment.newInstance(polygonTag, polygon!!.points, dialogListener)
                 .show(supportFragmentManager, "PolygonDialogFragment")
         } else {
             toast("Your Current Location is outside polygon ${polygon?.tag}")
@@ -242,9 +295,10 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
 
     }
 
-    private fun deletePolygon(id: Int) {
-        polygonList[0].remove()
+    private fun deletePolygon(tag: String) {
+        polygonList.find { it.tag == tag }?.remove()
         pointsList.forEach { it.remove() }
+        viewModel.deletePolygon(tag)
 
     }
 
@@ -308,7 +362,7 @@ class MapScreenActivity : BaseActivity<MapScreenViewModel>(), OnMapReadyCallback
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        supportFragmentManager.findFragmentByTag("PolygonDialogFragment")?.
-            onActivityResult(requestCode, resultCode, data)
+        supportFragmentManager.findFragmentByTag("PolygonDialogFragment")
+            ?.onActivityResult(requestCode, resultCode, data)
     }
 }

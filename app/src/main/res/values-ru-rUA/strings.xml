@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Polygon Test Task</string>
+  <string name="proceed">Приступить</string>
+  <string name="message_text">Нажмите Оранжевую Кнопку и добавьте точки на карте. Нужно минимум три точки для создания полигона</string>
+  <string name="message_text2">Нажмите Зеленую Кнопку для завершения редактирования</string>
+  <string name="save_data">Сохранить</string>
+  <string name="area">Площадь:</string>
+  <string name="enter_polygon_info">Введите данные о Полигоне</string>
+</resources>

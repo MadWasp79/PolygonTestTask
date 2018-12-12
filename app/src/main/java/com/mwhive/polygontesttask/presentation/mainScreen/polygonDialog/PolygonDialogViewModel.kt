@@ -20,11 +20,9 @@ import java.util.*
 
 class PolygonDialogViewModel : BaseViewModel() {
 
-    //in real app we will use ViewModelFactory which will provide us same instances of Repository and Context for any ViewModel
 
-    val repo = Repository
     var polygonTag = ""
-    lateinit var polygonData: PolygonModel
+    var polygonData: PolygonModel? = null
     var pickedImage: File? = null
 
     val currentDate = MutableLiveData<String>()
@@ -38,19 +36,35 @@ class PolygonDialogViewModel : BaseViewModel() {
     fun setTag(polygonTag: String, polygonPoints: MutableList<LatLng>) {
         this.polygonTag = polygonTag
 
-        polygonData = repo.getPolygonByTag(polygonTag)
-        polygonData.tag = polygonTag
-        polygonData.polygonPoints.clear()
-        polygonData.polygonPoints.addAll(polygonPoints)
-        calculateAreaAndPoints(polygonPoints)
+        polygonData = repository.getPolygonByTag(polygonTag)
 
-        with(polygonData) {
+        if(polygonData == null ) {
+            polygonData = PolygonModel()
+            polygonData?.tag = polygonTag
+            polygonData?.polygonPoints?.addAll(polygonPoints)
+        }
+
+        calculateAreaAndPoints(polygonData!!.polygonPoints)
+
+        with(polygonData!!) {
             setDateToView(date)
             tagLiveData.postValue(tag)
             infoTextLiveData.postValue(message)
             setImageUriToLiveData(photoLink)
         }
 
+    }
+
+    private fun transformLatLngToList(polygonPoints: List<List<Double>>): List<LatLng> {
+        val list = mutableListOf<LatLng>()
+        polygonPoints.forEach { list.add(LatLng(it[0],it[1])) }
+        return list
+    }
+
+    private fun transformListToLatLng(polygonPoints: List<LatLng>): List<List<Double>> {
+        val list = mutableListOf<List<Double>>()
+        polygonPoints.forEach { list.add(listOf(it.latitude, it.longitude)) }
+        return list
     }
 
     private fun calculateAreaAndPoints(polygonPoints: MutableList<LatLng>) {
@@ -60,9 +74,9 @@ class PolygonDialogViewModel : BaseViewModel() {
     }
 
     fun setDateToModel(year: Int, monthOfYear: Int, dayOfMonth: Int) {
-        polygonData.date = GregorianCalendar(year, monthOfYear, dayOfMonth).timeInMillis / 1000
-        Timber.w("Polygon Date ${polygonData.date}")
-        setDateToView(polygonData.date)
+        polygonData!!.date = GregorianCalendar(year, monthOfYear, dayOfMonth).timeInMillis / 1000
+        Timber.w("Polygon Date ${polygonData!!.date}")
+        setDateToView(polygonData!!.date)
     }
 
 
@@ -82,14 +96,17 @@ class PolygonDialogViewModel : BaseViewModel() {
     }
 
     fun saveImage(path: String) {
-        polygonData.photoLink = path
+        polygonData!!.photoLink = path
 
 
     }
 
     fun saveData(message: String) {
-        polygonData.message = message
-        repo.updatePolygon(polygonData)
+        polygonData?.message = message
+        Timber.i("Polygon info $polygonData")
+
+        repository.savePolygon(polygonData!!)
+
         isReadyForDismiss.postValue(true)
     }
 

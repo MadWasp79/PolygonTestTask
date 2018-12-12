@@ -2,7 +2,7 @@
 <resources>
   <color name="colorPrimary">#008577</color>
   <color name="colorPrimaryDark">#00574B</color>
-  <color name="colorAccent">#D81B60</color>
+  <color name="colorAccent">#ff882c</color>
   <color name="backgroundTransparent50">#7f000000</color>
   <color name="backgroundWhite">#ffffffff</color>
 
@@ -11,4 +11,8 @@
   <color name="colorEditOff">#ff882c</color>
   <color name="colorEditOn">#FF008577</color>
 
+  <!--Polygons-->
+  <color name="blueTransp">#645e98ff</color>
+  <color name="greenTransp">#7e4bbf7a</color>
+  <color name="yellowTransp">#85ff882c</color>
 </resources>
